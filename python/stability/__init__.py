@@ -13,7 +13,7 @@ It includes 5 functions that provide:
     Journal of Machine Learning Reasearch (JMLR). 2017.
 
 You can find a full demo using this package at:
-http://htmlpreview.github.io/?https://github.com/nogueirs/JMLR2017/blob/master/python/stabilityDemo.html
+https://github.com/nogueirs/JMLR2017/blob/master/python/stabilityDemo.html
 
 NB: This package requires the installation of the packages: numpy, scipy and math
 
@@ -33,14 +33,15 @@ def getStability(Z):
            Each row of the binary matrix represents a feature set, where a 1 at the f^th position 
            means the f^th feature has been selected and a 0 means it has not been selected.
            
-    OUTPUT: The stability of the feature selection procedure
+    OUTPUT: The stability of the feature selection procedure, as well as hatPF, kbar and denom.
     '''
     Z=checkInputType(Z)
-    M,d=Z.shape
-    hatPF=np.mean(Z,axis=0)
-    kbar=np.sum(hatPF)
+    M,d=Z.shape  # M is the number of feature sets and d the total number of features
+    hatPF=np.mean(Z,axis=0) # hatPF is a numpy.array with the frequency of selection of each feature
+    kbar=np.sum(hatPF) # # kbar is the average number of selected features over the M feature sets
     denom=(kbar/d)*(1-kbar/d)
-    return 1-(M/(M-1))*np.mean(np.multiply(hatPF,1-hatPF))/denom
+    stab = 1-(M/(M-1))*np.mean(np.multiply(hatPF,1-hatPF))/denom # the stability estimate
+    return stab, hatPF, denom, kbar
 
 def getVarianceofStability(Z):
     '''
@@ -55,12 +56,9 @@ def getVarianceofStability(Z):
             and where the key 'variance' provides the variance of the stability estimate
     '''
     Z=checkInputType(Z) # check the input Z is of the right type
-    M,d=Z.shape # M is the number of feature sets and d the total number of features
-    hatPF=np.mean(Z,axis=0) # hatPF is a numpy.array with the frequency of selection of each feature
-    kbar=np.sum(hatPF) # kbar is the average number of selected features over the M feature sets
+    M,d=Z.shape
     k=np.sum(Z,axis=1) # k is a numpy.array with the number of features selected on each one of the M feature sets
-    denom=(kbar/d)*(1-kbar/d) 
-    stab=1-(M/(M-1))*np.mean(np.multiply(hatPF,1-hatPF))/denom # the stability estimate
+    stab, hatPF, denom, kbar = getStability(Z)
     phi=np.zeros(M)
     for i in range(M):
         phi[i]=(1/denom)*(np.mean(np.multiply(Z[i,],hatPF))-(k[i]*kbar)/d**2+(stab/2)*((2*k[i]*kbar)/d**2-k[i]/d-kbar/d+1))
